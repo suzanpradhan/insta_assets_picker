@@ -624,7 +624,13 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
           duration: duration,
           reverseDuration: duration,
           child: isSelected
-              ? Text((indexSelected + 1).toString())
+              ? Text(
+                  (indexSelected + 1).toString(),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Theme.of(context).primaryColorDark),
+                )
               : const SizedBox.shrink(),
         ),
       ),
