@@ -388,20 +388,18 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
           return TextButton(
             style: pickerTheme?.textButtonTheme.style ??
                 TextButton.styleFrom(
-                  foregroundColor: themeColor,
+                  foregroundColor: isLoaded ?  themeColor : pickerTheme?.disabledColor,
                   disabledForegroundColor: theme.dividerColor,
                 ),
             onPressed: isLoaded && p.isSelectedNotEmpty
                 ? () => onConfirm(context)
                 : null,
-            child: isLoaded
-                ? Text(
+            child: Text(
                     p.isSelectedNotEmpty && !isSingleAssetMode
                         ? '${textDelegate.confirm}'
                             ' (${p.selectedAssets.length}/${p.maxAssets})'
                         : textDelegate.confirm,
                   )
-                : _buildLoader(context, 10),
           );
         },
       ),
@@ -525,8 +523,10 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
                                   alignment: Alignment.bottomCenter,
                                   child: SizedBox(
                                     height: cropViewVisibleHeight,
-                                    child: Center(
-                                      child: _buildLoader(context, 16),
+                                    child: const Center(
+                                      child: Text(
+                                        "No image selected"
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -57,6 +57,9 @@ class InstaAssetPicker {
     final DefaultAssetPickerBuilderDelegate builder =
         picker.builder as DefaultAssetPickerBuilderDelegate;
     final DefaultAssetPickerProvider p = builder.provider;
+    if (p.currentPath == null) {
+      await p.getPaths();
+    }
     await p.switchPath(
       PathWrapper<AssetPathEntity>(
         path: await p.currentPath!.path.obtainForNewProperties(),

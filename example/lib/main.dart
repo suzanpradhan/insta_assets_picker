@@ -6,6 +6,7 @@ import 'package:insta_assets_picker_demo/pages/camera/camera_picker.dart';
 import 'package:insta_assets_picker_demo/pages/camera/wechat_camera_picker.dart';
 import 'package:insta_assets_picker_demo/pages/restorable_picker.dart';
 import 'package:insta_assets_picker_demo/widgets/insta_picker_interface.dart';
+import 'package:insta_assets_picker_demo/pages/camera/camera_image_picker.dart';
 
 const kDefaultColor = Colors.deepPurple;
 
@@ -68,6 +69,7 @@ class PickersScreen extends StatelessWidget {
       const RestorablePicker(),
       CameraPicker(camera: _cameras.first),
       const WeChatCameraPicker(),
+      const CameraImagePicker(),
     ];
 
     return Scaffold(
