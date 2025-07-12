@@ -1,3 +1,50 @@
+# Changelog
+
+## 3.3.0
+
+- fix null pointer error when `pickerTheme` was not provided [#55](https://github.com/LeGoffMael/insta_assets_picker/pull/55)
+- `actionsBuilder` parameter in `InstaPickerActionsBuilder` now receives a non-nullable `ThemeData`
+
+## 3.2.0
+
+- bump `wechat_assets_picker` to 9.5.0
+- fixes android build error on flutter 3.29 [#60](https://github.com/LeGoffMael/insta_assets_picker/issues/60)
+- remove retired `ffmpeg_kit` package from example
+
+### Breaking changes
+
+- Migrate to Flutter 3.29, and drop supports for previous Flutter versions.
+
+## 3.1.0
+
+- bump `wechat_assets_picker` to 9.2.2 & fix an issue with wechat_picker_library 1.0.3
+- exposes `pathNameBuilder` parameter to picker [#53](https://github.com/LeGoffMael/insta_assets_picker/pull/53)
+- fix permission issue on Android [#52](https://github.com/LeGoffMael/insta_assets_picker/pull/52)
+- fix android APK build error [#51](https://github.com/LeGoffMael/insta_assets_picker/issues/51)
+
+## 3.0.0
+
+### Features
+
+- Video support [#50](https://github.com/LeGoffMael/insta_assets_picker/pull/50)
+  - video processing must be handled manually
+  - new `requestType` param set to `RequestType.common` by default.
+  - new `previewThumbnailSize` & `skipCropOnComplete` config parameters.
+  - new `InstaAssetCropTransform` widget to preview the cropped asset.
+- Crop view initialization time is now much faster.
+
+### [Breaking changes](MIGRATION_GUIDE.md#3.0.0-dev.1)
+
+- new `InstaAssetPickerConfig` config class to provide picker configuration [#48](https://github.com/LeGoffMael/insta_assets_picker/pull/48)
+  - new `gridThumbnailSize`, `themeColor` & `selectPredicate` parameters
+- updated `InstaAssetsExportDetails` class, crop file are now nullable and all the crop parameters are provided in a new class called `InstaAssetsExportData`.
+
+## 2.3.1
+
+- bump `wechat_assets_picker` to 9.1.0
+- fixes the deprecated `ColorScheme.background` warnings
+- fixes empty gallery on restorable picker first open [#45](https://github.com/LeGoffMael/insta_assets_picker/pull/45)
+
 ## 2.3.0
 
 - bump `wechat_assets_picker` to 9.0.0

@@ -19,7 +19,10 @@ class RestorablePicker extends StatefulWidget with InstaPickerInterface {
 
 class _PickerScreenState extends State<RestorablePicker> {
   final _instaAssetsPicker = InstaAssetPicker();
-  final _provider = DefaultAssetPickerProvider(maxAssets: 10);
+  late final _provider = DefaultAssetPickerProvider(
+    maxAssets: 10,
+    requestType: RequestType.common,
+  );
   late final ThemeData _pickerTheme = widget.getPickerTheme(context);
 
   List<AssetEntity> selectedAssets = <AssetEntity>[];
@@ -36,12 +39,14 @@ class _PickerScreenState extends State<RestorablePicker> {
     final List<AssetEntity>? result =
         await _instaAssetsPicker.restorableAssetsPicker(
       context,
-      title: widget.description.fullLabel,
-      closeOnComplete: true,
-      provider: _provider,
-      pickerTheme: _pickerTheme,
+      pickerConfig: InstaAssetPickerConfig(
+        title: widget.description.fullLabel,
+        closeOnComplete: true,
+        pickerTheme: _pickerTheme,
+      ),
+      provider: () => _provider,
       onCompleted: (cropStream) {
-        // example withtout StreamBuilder
+        // example without StreamBuilder
         cropStream.listen((event) {
           if (mounted) {
             setState(() {
@@ -74,11 +79,7 @@ class _PickerScreenState extends State<RestorablePicker> {
                     'Using this picker means that you must dispose it manually',
               ),
             ),
-            CropResultView(
-              selectedAssets: selectedAssets,
-              croppedFiles: exportDetails?.croppedFiles ?? [],
-              progress: exportDetails?.progress,
-            )
+            CropResultView(result: exportDetails)
           ],
         ),
       );

@@ -9,7 +9,6 @@ import 'package:insta_assets_picker/src/insta_assets_crop_controller.dart';
 import 'package:insta_assets_picker/src/widget/crop_viewer.dart';
 import 'package:provider/provider.dart';
 
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_picker_library/wechat_picker_library.dart';
 
 /// The reduced height of the crop view
@@ -27,7 +26,7 @@ const _kActionsPadding = EdgeInsets.symmetric(horizontal: 8, vertical: 8);
 
 typedef InstaPickerActionsBuilder = List<Widget> Function(
   BuildContext context,
-  ThemeData? pickerTheme,
+  ThemeData pickerTheme,
   double height,
   VoidCallback unselectAll,
 );
@@ -37,36 +36,54 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
     required super.initialPermission,
     required super.provider,
     required this.onCompleted,
-    super.gridCount = 4,
-    super.pickerTheme,
-    super.textDelegate,
-    super.locale,
+    required InstaAssetPickerConfig config,
     super.keepScrollOffset,
-    super.loadingIndicatorBuilder,
-    super.limitedPermissionOverlayPredicate,
-    super.specialItemBuilder,
-    SpecialItemPosition? specialItemPosition,
-    this.title,
-    this.closeOnComplete = false,
-    this.actionsBuilder,
-    InstaAssetCropDelegate cropDelegate = const InstaAssetCropDelegate(),
+    super.locale,
   })  : _cropController =
-            InstaAssetsCropController(keepScrollOffset, cropDelegate),
+            InstaAssetsCropController(keepScrollOffset, config.cropDelegate),
+        title = config.title,
+        closeOnComplete = config.closeOnComplete,
+        skipCropOnComplete = config.skipCropOnComplete,
+        actionsBuilder = config.actionsBuilder,
         super(
+          gridCount: config.gridCount,
+          pickerTheme: config.pickerTheme,
+          specialItemPosition:
+              config.specialItemPosition ?? SpecialItemPosition.none,
+          specialItemBuilder: config.specialItemBuilder,
+          loadingIndicatorBuilder: config.loadingIndicatorBuilder,
+          selectPredicate: config.selectPredicate,
+          limitedPermissionOverlayPredicate:
+              config.limitedPermissionOverlayPredicate,
+          themeColor: config.themeColor,
+          textDelegate: config.textDelegate,
+          gridThumbnailSize: config.gridThumbnailSize,
+          previewThumbnailSize: config.previewThumbnailSize,
+          pathNameBuilder: config.pathNameBuilder,
           shouldRevertGrid: false,
-          specialItemPosition: specialItemPosition ?? SpecialItemPosition.none,
+          dragToSelect: false, // not yet supported with the inst_picker
         );
 
+  /// The text title in the picker [AppBar].
   final String? title;
 
+  /// Callback called when the assets selection is confirmed.
+  /// It will as argument a [Stream] with exportation details [InstaAssetsExportDetails].
   final Function(Stream<InstaAssetsExportDetails>) onCompleted;
 
+  /// The [Widget] to display on top of the assets grid view.
+  /// Default is unselect all assets button.
   final InstaPickerActionsBuilder? actionsBuilder;
 
   /// Should the picker be closed when the selection is confirmed
   ///
   /// Defaults to `false`, like instagram
   final bool closeOnComplete;
+
+  /// Should the picker automatically crop when the selection is confirmed
+  ///
+  /// Defaults to `false`.
+  final bool skipCropOnComplete;
 
   // LOCAL PARAMETERS
 
@@ -102,7 +119,12 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
       Navigator.of(context).pop(provider.selectedAssets);
     }
     _cropViewerKey.currentState?.saveCurrentCropChanges();
-    onCompleted(_cropController.exportCropFiles(provider.selectedAssets));
+    onCompleted(
+      _cropController.exportCropFiles(
+        provider.selectedAssets,
+        skipCrop: skipCropOnComplete,
+      ),
+    );
   }
 
   /// The responsive height of the crop view
@@ -305,7 +327,7 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
                   child: Text(
                     isPermissionLimited && p.path.isAll
                         ? textDelegate.accessiblePathName
-                        : p.path.name,
+                        : pathNameBuilder?.call(p.path) ?? p.path.name,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -342,7 +364,7 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
   /// Returns the list ofactions that are displayed on top of the assets grid view
   Widget _buildActions(BuildContext context) {
     final double height = _kPathSelectorRowHeight - _kActionsPadding.vertical;
-    final ThemeData? theme = pickerTheme?.copyWith(
+    final ThemeData actionTheme = theme.copyWith(
       buttonTheme: const ButtonThemeData(padding: EdgeInsets.all(8)),
     );
 
@@ -361,14 +383,14 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
                     mainAxisSize: MainAxisSize.min,
                     children: actionsBuilder!(
                       context,
-                      theme,
+                      actionTheme,
                       height,
                       unSelectAll,
                     ),
                   )
                 : InstaPickerCircleIconButton.unselectAll(
                     onTap: unSelectAll,
-                    theme: theme,
+                    theme: actionTheme,
                     size: height,
                   ),
           ],
@@ -530,7 +552,7 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
                                     ),
                                   ),
                                 ),
-                                theme: pickerTheme,
+                                theme: theme,
                               ),
                             ),
                             _buildActions(context),
@@ -616,7 +638,7 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
         border: Border.all(color: theme.unselectedWidgetColor, width: 1),
         color: isSelected
             ? themeColor
-            : theme.unselectedWidgetColor.withOpacity(.2),
+            : theme.unselectedWidgetColor.withValues(alpha: .2),
         shape: BoxShape.circle,
       ),
       child: FittedBox(
@@ -650,8 +672,8 @@ class InstaAssetPickerBuilder extends DefaultAssetPickerBuilderDelegate {
               duration: switchingPathDuration,
               padding: const EdgeInsets.all(4),
               color: isPreview
-                  ? theme.unselectedWidgetColor.withOpacity(.5)
-                  : theme.colorScheme.background.withOpacity(.1),
+                  ? theme.unselectedWidgetColor.withValues(alpha: .5)
+                  : theme.colorScheme.surface.withValues(alpha: .1),
               child: Align(
                 alignment: AlignmentDirectional.topEnd,
                 child: isSelected && !isSingleAssetMode
